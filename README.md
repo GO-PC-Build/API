@@ -45,3 +45,7 @@ No authorization is required for this route.
 }
 ```
 </details>
+
+## License
+
+This application is under a [CCO 1.0 License](./LICENSE).
