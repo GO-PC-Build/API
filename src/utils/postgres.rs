@@ -13,4 +13,6 @@ pub fn create_account(data: &SignUpRequest) -> Result<&'static str, HttpResponse
     Err(internal_server_error_message("Unimplemented endpoint"))
 }
 
-// pub fn revoke_token()
+pub fn revoke_token(token: &str) -> Result<&'static str, HttpResponse> {
+    Err(internal_server_error_message("Unimplemented endpoint"))
+}
