@@ -152,7 +152,7 @@ This endpoint permanently deletes a token from the database.
 ```json
 {
   "message": "Oops... You did something wrong! (See error for more information)",
-  "error": "No 'Authorization' header was present on the request"
+  "error": "No or an invalid 'Authorization' header was present on the request"
 }
 ```
 

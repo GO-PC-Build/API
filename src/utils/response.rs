@@ -23,6 +23,10 @@ pub fn bad_request_message(error: &'static str) -> HttpResponse {
     })
 }
 
+pub fn no_auth_header() -> HttpResponse {
+    bad_request_message("No or an invalid 'Authorization' header was present on the request")
+}
+
 pub fn internal_server_error<T: Serialize>(value: T) -> HttpResponse {
     json_former(HttpResponse::InternalServerError(), value)
 }

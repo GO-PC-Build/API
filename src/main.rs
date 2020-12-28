@@ -1,3 +1,5 @@
+extern crate chrono;
+
 use std::io::Result;
 
 use actix_cors::Cors;
@@ -29,5 +31,7 @@ async fn main() -> Result<()> {
                 .service(routes::auth::login)
                 .service(routes::auth::register)
                 .service(routes::auth::revoke))
+            .service(web::scope("/user")
+                .service(routes::user::me))
     }).bind(addr)?.run().await
 }
