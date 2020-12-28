@@ -17,6 +17,27 @@ pub fn connect() -> Result<Client, Error> {
     Client::connect(&database_url, NoTls)
 }
 
+pub fn get_user_uuid(token: String) -> Result<Uuid, String> {
+    match connect() {
+        Ok(mut client) => match client.query("SELECT acc FROM tokens WHERE token = $1", &[&token]) {
+            Ok(data) => {
+                let mut uuid: Option<Uuid> = None;
+                for row in data {
+                    let id: Uuid = row.get(0);
+                    uuid = Some(id);
+                }
+
+                match uuid {
+                    Some(uuid) => Ok(uuid),
+                    None => Err("No associated account found for the token.".to_string())
+                }
+            }
+            Err(e) => Err(format!("Could not execute query. {}", e))
+        }
+        Err(e) => Err(format!("Couldn't connect to DB. {}", e))
+    }
+}
+
 pub fn get_user_token(user: Uuid) -> Result<String, String> {
     match connect() {
         Ok(mut client) => match client.query("SELECT token FROM tokens WHERE acc = $1", &[&user]) {
@@ -27,7 +48,7 @@ pub fn get_user_token(user: Uuid) -> Result<String, String> {
                     token = Some(t);
                 }
 
-                return match token {
+                match token {
                     Some(token) => Ok(token),
                     None => Err("Could not properly iterate through records.".to_string())
                 }
@@ -77,6 +98,7 @@ pub fn revoke_token(token: &str) -> Result<&'static str, HttpResponse> {
 }
 
 pub fn get_user(token: &str) -> HttpResponse {
+    // TODO: IMPLEMENT ENDPOINT
     // let created_at = SystemTime::now();
     // let date: DateTime<Utc> = created_at.into();
 
