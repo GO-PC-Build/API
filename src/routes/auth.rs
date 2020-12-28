@@ -1,11 +1,7 @@
-use actix_web::{HttpRequest, HttpResponse, post, Responder, web::Json};
-use actix_web::body::Body;
-use actix_web::http::header::ToStrError;
-use actix_web::http::HeaderValue;
+use actix_web::{HttpRequest, post, Responder, web::Json};
 
 use crate::types::auth::{SignInRequest, SignUpRequest, TokenResponse};
 use crate::types::status::StatusResponse;
-use crate::utils::auth::is_valid_request;
 use crate::utils::postgres::{create_account, get_login_token, revoke_token};
 use crate::utils::response::{internal_server_error, no_auth_header, ok};
 

@@ -1,24 +1,14 @@
 use actix_web::{get, Responder, HttpRequest};
-use crate::utils::response::{ok, no_auth_header};
-use crate::utils::auth::is_valid_request;
-use crate::types::user::User;
-use std::time::SystemTime;
-use chrono::{DateTime, Utc};
+use crate::utils::response::{no_auth_header, internal_server_error};
+use crate::utils::postgres::get_user;
 
 #[get("/@me")]
 pub async fn me(req: HttpRequest) -> impl Responder {
-    if !is_valid_request(&req) {
-        return no_auth_header()
+    match &req.headers().get("Authorization") {
+        Some(token) => match token.to_str() {
+            Ok(token) => get_user(token),
+            Err(_) => internal_server_error("Could not convert token...")
+        }
+        None => no_auth_header()
     }
-
-    let created_at = SystemTime::now();
-    let date: DateTime<Utc> = created_at.into();
-
-    ok(User {
-        id: "123example321".to_string(),
-        nickname: "example lord".to_string(),
-        email: "example@example.com".to_string(),
-        avatar: "http://cdn.example.com/pfp/123example321".to_string(),
-        date: date.to_rfc3339()
-    })
 }
