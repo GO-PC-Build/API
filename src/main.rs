@@ -1,4 +1,5 @@
 extern crate chrono;
+extern crate dotenv;
 
 use std::io::Result;
 

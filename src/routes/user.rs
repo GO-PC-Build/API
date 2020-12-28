@@ -1,6 +1,7 @@
-use actix_web::{get, Responder, HttpRequest};
-use crate::utils::response::{no_auth_header, internal_server_error};
+use actix_web::{get, HttpRequest, Responder};
+
 use crate::utils::postgres::get_user;
+use crate::utils::response::{internal_server_error, no_auth_header};
 
 #[get("/@me")]
 pub async fn me(req: HttpRequest) -> impl Responder {

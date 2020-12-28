@@ -8,4 +8,3 @@ pub struct User {
     pub avatar: String,
     pub date: String,
 }
-

@@ -16,7 +16,7 @@ pub fn bad_request<T: Serialize>(value: T) -> HttpResponse {
     json_former(HttpResponse::BadRequest(), value)
 }
 
-pub fn bad_request_message(error: &'static str) -> HttpResponse {
+pub fn bad_request_message(error: String) -> HttpResponse {
     bad_request(BaseException {
         message: "Oops... You did something wrong! (See error for more information)",
         error
@@ -24,14 +24,14 @@ pub fn bad_request_message(error: &'static str) -> HttpResponse {
 }
 
 pub fn no_auth_header() -> HttpResponse {
-    bad_request_message("No or an invalid 'Authorization' header was present on the request")
+    bad_request_message("No or an invalid 'Authorization' header was present on the request".to_string())
 }
 
 pub fn internal_server_error<T: Serialize>(value: T) -> HttpResponse {
     json_former(HttpResponse::InternalServerError(), value)
 }
 
-pub fn internal_server_error_message(error: &'static str) -> HttpResponse {
+pub fn internal_server_error_message(error: String) -> HttpResponse {
     internal_server_error(BaseException {
         message: "Oops... Something went wrong on our side.\n\
         If this keeps happening please contact the developer on discord. (Arthur#0002)",
