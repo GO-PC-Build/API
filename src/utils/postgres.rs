@@ -22,14 +22,15 @@ pub fn revoke_token(token: &str) -> Result<&'static str, HttpResponse> {
 }
 
 pub fn get_user(token: &str) -> HttpResponse {
-    let created_at = SystemTime::now();
-    let date: DateTime<Utc> = created_at.into();
+    // let created_at = SystemTime::now();
+    // let date: DateTime<Utc> = created_at.into();
 
-    ok(User {
-        id: "123example321".to_string(),
-        nickname: "example lord".to_string(),
-        email: "example@example.com".to_string(),
-        avatar: "http://cdn.example.com/pfp/123example321".to_string(),
-        date: date.to_rfc3339()
-    })
+    // ok(User {
+    //     id: "123example321".to_string(),
+    //     nickname: "example lord".to_string(),
+    //     email: "example@example.com".to_string(),
+    //     avatar: "http://cdn.example.com/pfp/123example321".to_string(),
+    //     date: date.to_rfc3339()
+    // })
+    internal_server_error_message("Unimplemented endpoint")
 }
