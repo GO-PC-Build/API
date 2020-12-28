@@ -87,6 +87,27 @@ This endpoint permanently deletes a token from the database.
 
 </details>
 
+<details>
+<summary>/user/@me</summary>
+
+#### About
+
+This endpoint fetches the base data from a user.
+
+#### Request Header
+
+`Authorization`
+
+#### Return type
+
+`User`
+
+#### Exception type
+
+`BaseException`
+
+</details>
+
 ### Responses
 
 #### Success
@@ -128,6 +149,35 @@ This endpoint permanently deletes a token from the database.
 ```json
 {
   "token": "GsRl67eiDZt4oskOmJqFa256okMu6aNDSHVmJRJSsEv6koS9jfn9M8aelIZM92GA.qljU4k7k"
+}
+```
+
+</details>
+
+<details>
+<summary>User</summary>
+
+#### Format:
+
+```json
+{
+  "id": "string",
+  "nickname": "string",
+  "email": "string",
+  "avatar": "string",
+  "date": "string"
+}
+```
+
+#### Example response:
+
+```json
+{
+  "id": "123example321",
+  "nickname": "example lord",
+  "email": "example@example.com",
+  "avatar": "http://cdn.example.com/pfp/123example321",
+  "date": "2020-12-28T13:18:23.986284700+00:00"
 }
 ```
 
