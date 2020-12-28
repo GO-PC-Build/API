@@ -14,7 +14,7 @@ successfully and professionally build your own computers and install an operatin
 
 #### About
 
-This route can be used to check if the API is up. No authorization is required for this route.
+This route can be used to check if the API is up.
 
 #### Return type
 
