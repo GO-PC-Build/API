@@ -1,9 +1,11 @@
-use actix_web::{App, http, HttpServer};
-use actix_cors::Cors;
 use std::io::Result;
+
+use actix_cors::Cors;
+use actix_web::{App, http, HttpServer, web};
 
 mod utils;
 mod routes;
+mod types;
 
 #[actix_web::main]
 async fn main() -> Result<()> {
@@ -23,5 +25,9 @@ async fn main() -> Result<()> {
         App::new()
             .wrap(cors)
             .service(routes::status::status)
+            .service(web::scope("/auth")
+                .service(routes::auth::login)
+                .service(routes::auth::register)
+                .service(routes::auth::revoke))
     }).bind(addr)?.run().await
 }
