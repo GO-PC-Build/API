@@ -23,8 +23,8 @@ pub async fn register(data: Json<SignUpRequest>) -> impl Responder {
 
 #[post("/revoke")]
 pub async fn revoke(req: HttpRequest) -> impl Responder {
-    match is_valid_request(&req) {
-        Some(token) => HttpResponse::Ok().body("Revoke route"),
-        None => bad_request_message("No 'Authorization' header was present on the request")
+    if !is_valid_request(&req) {
+        return bad_request_message("No 'Authorization' header was present on the request")
     }
+    HttpResponse::Ok().body("Revoke route")
 }
