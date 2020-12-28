@@ -75,9 +75,7 @@ This endpoint permanently deletes a token from the database.
 
 #### Request Header
 
-|      Name     |                                   Value                                   |
-|:-------------:|:-------------------------------------------------------------------------:|
-| Authorization | GsRl67eiDZt4oskOmJqFa256okMu6aNDSHVmJRJSsEv6koS9jfn9M8aelIZM92GA.qljU4k7k |
+`Authorization`
 
 #### Return type
 
@@ -157,6 +155,26 @@ This endpoint permanently deletes a token from the database.
   "error": "No 'Authorization' header was present on the request"
 }
 ```
+
+</details>
+
+### Headers
+
+<details>
+<summary>Authorization</summary>
+
+#### Format
+
+|      Name     | Value  |
+|:-------------:|:------:|
+| Authorization | string |
+
+
+##### Example
+
+|      Name     |                                   Value                                   |
+|:-------------:|:-------------------------------------------------------------------------:|
+| Authorization | GsRl67eiDZt4oskOmJqFa256okMu6aNDSHVmJRJSsEv6koS9jfn9M8aelIZM92GA.qljU4k7k |
 
 </details>
 
