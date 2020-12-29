@@ -1,11 +1,11 @@
-use actix_web::{get, HttpResponse, Responder};
-use actix_web::http::header::CONTENT_TYPE;
+use actix_web::{get, Responder};
+
+use crate::types::status::StatusResponse;
+use crate::utils::response::ok;
 
 #[get("/status")]
 pub async fn status() -> impl Responder {
-    HttpResponse::Ok()
-        .set_header(CONTENT_TYPE, "application/json")
-        .json(crate::types::status::StatusResponse {
-            message: "API is fully operational!"
-        })
+    ok(StatusResponse {
+        message: "API is fully operational!"
+    })
 }
