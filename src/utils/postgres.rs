@@ -11,6 +11,7 @@ use crate::types::auth::{SignInRequest, SignUpRequest};
 use crate::types::exceptions::BaseException;
 use crate::types::user::User;
 use crate::utils::response::{bad_request, internal_server_error_message, ok};
+use postgres::error::SqlState;
 
 pub fn connect() -> Result<Client, Error> {
     dotenv().ok();
@@ -50,7 +51,7 @@ pub fn get_user_token(user: Uuid) -> Result<String, String> {
                     return match client.query("CALL create_token($1);", &[&user]) {
                         Ok(_) => get_user_token(user),
                         Err(e) => Err(format!("Could not execute query. {}", e))
-                    }
+                    };
                 }
 
                 let mut token: Option<String> = None;
@@ -93,7 +94,7 @@ pub fn get_login_token(data: &SignInRequest) -> Result<String, HttpResponse> {
                 }
                 Err(bad_request(BaseException {
                     message: "Invalid credentials provided.",
-                    error: "".to_string()
+                    error: "".to_string(),
                 }))
             }
             Err(e) => Err(internal_server_error_message(format!("Couldn't execute query. {}", e)))
@@ -103,8 +104,28 @@ pub fn get_login_token(data: &SignInRequest) -> Result<String, HttpResponse> {
 }
 
 pub fn create_account(data: &SignUpRequest) -> Result<String, HttpResponse> {
-    // TODO: IMPLEMENT ENDPOINT
-    Err(internal_server_error_message("Unimplemented endpoint".to_string()))
+    match connect() {
+        Ok(mut client) => match client.execute(
+            "INSERT INTO accounts (nickname, email, password) \
+            VALUES ($1, $2, $3);", &[&data.username, &data.email, &data.password]) {
+            Ok(records) => {
+                if records == 0 {
+                    return Err(internal_server_error_message("Something went wrong while trying to create account.".to_string()));
+                }
+                Ok("Successfully created account.".to_string())
+            }
+            Err(e) => {
+                if e.code() == Some(&SqlState::UNIQUE_VIOLATION) {
+                    return Err(bad_request(BaseException {
+                        message: "An account already exists with those field(s).",
+                        error: e.to_string()
+                    }))
+                }
+                Err(internal_server_error_message(format!("Couldn't execute query. {}", e)))
+            }
+        }
+        Err(e) => Err(internal_server_error_message(format!("Couldn't connect to DB. {}", e)))
+    }
 }
 
 pub fn revoke_token(token: &str) -> Result<&'static str, HttpResponse> {
@@ -114,8 +135,8 @@ pub fn revoke_token(token: &str) -> Result<&'static str, HttpResponse> {
                 if records == 0 {
                     return Err(bad_request(BaseException {
                         message: "An invalid authorization token was provided.",
-                        error: "".to_string()
-                    }))
+                        error: "".to_string(),
+                    }));
                 }
                 Ok("Successfully removed the token.")
             }
