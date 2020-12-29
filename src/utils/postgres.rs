@@ -8,6 +8,7 @@ use postgres::{Client, Error, NoTls};
 use uuid::Uuid;
 
 use crate::types::auth::{SignInRequest, SignUpRequest};
+use crate::types::exceptions::BaseException;
 use crate::types::user::User;
 use crate::utils::response::{bad_request, internal_server_error_message, ok};
 
@@ -43,9 +44,17 @@ pub fn get_user_uuid(token: String) -> Result<Uuid, String> {
 
 pub fn get_user_token(user: Uuid) -> Result<String, String> {
     match connect() {
-        Ok(mut client) => match client.query("SELECT token FROM tokens WHERE acc = $1", &[&user]) {
+        Ok(mut client) => match client.query("SELECT token FROM tokens WHERE acc = $1;", &[&user]) {
             Ok(data) => {
+                if data.len() == 0 {
+                    return match client.query("CALL create_token($1);", &[&user]) {
+                        Ok(_) => get_user_token(user),
+                        Err(e) => Err(format!("Could not execute query. {}", e))
+                    }
+                }
+
                 let mut token: Option<String> = None;
+
                 for row in data {
                     let t: String = row.get(0);
                     token = Some(t);
@@ -82,7 +91,10 @@ pub fn get_login_token(data: &SignInRequest) -> Result<String, HttpResponse> {
                     }
                     return token;
                 }
-                Err(bad_request("Invalid credentials provided."))
+                Err(bad_request(BaseException {
+                    message: "Invalid credentials provided.",
+                    error: "".to_string()
+                }))
             }
             Err(e) => Err(internal_server_error_message(format!("Couldn't execute query. {}", e)))
         }
@@ -96,8 +108,21 @@ pub fn create_account(data: &SignUpRequest) -> Result<String, HttpResponse> {
 }
 
 pub fn revoke_token(token: &str) -> Result<&'static str, HttpResponse> {
-    // TODO: IMPLEMENT ENDPOINT
-    Err(internal_server_error_message("Unimplemented endpoint".to_string()))
+    match connect() {
+        Ok(mut client) => match client.execute("DELETE FROM tokens WHERE token = $1;", &[&token]) {
+            Ok(records) => {
+                if records == 0 {
+                    return Err(bad_request(BaseException {
+                        message: "An invalid authorization token was provided.",
+                        error: "".to_string()
+                    }))
+                }
+                Ok("Successfully removed the token.")
+            }
+            Err(e) => Err(internal_server_error_message(format!("Couldn't execute query. {}", e)))
+        }
+        Err(e) => Err(internal_server_error_message(format!("Couldn't connect to DB. {}", e)))
+    }
 }
 
 pub fn get_user(token: &str) -> HttpResponse {
