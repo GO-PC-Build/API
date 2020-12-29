@@ -19,6 +19,7 @@ This route can be used to check if the API is up.
 #### Return type
 
 `StatusResponse`
+
 </details>
 
 <details>
@@ -40,6 +41,7 @@ This endpoint can be used for existing users to receive a token with their crede
 #### Return type
 
 `TokenResponse`
+
 </details>
 
 <details>
@@ -55,15 +57,14 @@ This endpoint provides a way for new users to create an account.
 {
   "username": "string",
   "email": "string",
-  "password": "string",
-  "first_name": "string",
-  "last_name": "string"
+  "password": "string"
 }
 ```
 
 #### Return type
 
 `TokenResponse`
+
 </details>
 
 <details>
@@ -215,14 +216,13 @@ This endpoint fetches the base data from a user.
 
 #### Format
 
-|      Name     | Value  |
+| Name          | Value  |
 |:-------------:|:------:|
 | Authorization | string |
 
-
 ##### Example
 
-|      Name     |                                   Value                                   |
+| Name          | Value                                                                     |
 |:-------------:|:-------------------------------------------------------------------------:|
 | Authorization | GsRl67eiDZt4oskOmJqFa256okMu6aNDSHVmJRJSsEv6koS9jfn9M8aelIZM92GA.qljU4k7k |
 
