@@ -1,12 +1,15 @@
 use std::env;
+use std::time::SystemTime;
 
 use actix_web::HttpResponse;
+use chrono::{DateTime, Utc};
 use dotenv::dotenv;
 use postgres::{Client, Error, NoTls};
 use uuid::Uuid;
 
 use crate::types::auth::{SignInRequest, SignUpRequest};
-use crate::utils::response::{bad_request, internal_server_error_message};
+use crate::types::user::User;
+use crate::utils::response::{bad_request, internal_server_error_message, ok};
 
 pub fn connect() -> Result<Client, Error> {
     dotenv().ok();
@@ -19,7 +22,7 @@ pub fn connect() -> Result<Client, Error> {
 
 pub fn get_user_uuid(token: String) -> Result<Uuid, String> {
     match connect() {
-        Ok(mut client) => match client.query("SELECT acc FROM tokens WHERE token = $1", &[&token]) {
+        Ok(mut client) => match client.query("SELECT acc FROM tokens WHERE token = $1;", &[&token]) {
             Ok(data) => {
                 let mut uuid: Option<Uuid> = None;
                 for row in data {
@@ -77,7 +80,7 @@ pub fn get_login_token(data: &SignInRequest) -> Result<String, HttpResponse> {
                             Err(e) => Err(internal_server_error_message(e))
                         }
                     }
-                    return token
+                    return token;
                 }
                 Err(bad_request("Invalid credentials provided."))
             }
@@ -98,16 +101,31 @@ pub fn revoke_token(token: &str) -> Result<&'static str, HttpResponse> {
 }
 
 pub fn get_user(token: &str) -> HttpResponse {
-    // TODO: IMPLEMENT ENDPOINT
-    // let created_at = SystemTime::now();
-    // let date: DateTime<Utc> = created_at.into();
-
-    // ok(User {
-    //     id: "123example321".to_string(),
-    //     nickname: "example lord".to_string(),
-    //     email: "example@example.com".to_string(),
-    //     avatar: "http://cdn.example.com/pfp/123example321".to_string(),
-    //     date: date.to_rfc3339()
-    // })
-    internal_server_error_message("Unimplemented endpoint".to_string())
+    match get_user_uuid(token.parse().unwrap()) {
+        Ok(id) => match connect() {
+            Ok(mut client) => match client.query(
+                "SELECT nickname, email, avatar, date \
+                FROM accounts \
+                WHERE id = $1;", &[&id]) {
+                Ok(data) => {
+                    let mut user: Option<User> = None;
+                    for row in data {
+                        let nickname: String = row.get(0);
+                        let email: String = row.get(1);
+                        let avatar: String = row.get(2);
+                        let created_at: SystemTime = row.get(3);
+                        let date: DateTime<Utc> = created_at.into();
+                        user = Some(User { id, nickname, email, avatar, date: date.to_rfc3339() });
+                    }
+                    match user {
+                        Some(user) => ok(user),
+                        None => bad_request("Could not find user associated with token")
+                    }
+                }
+                Err(e) => internal_server_error_message(format!("Couldn't execute query. {}", e))
+            }
+            Err(e) => internal_server_error_message(format!("Couldn't connect to DB. {}", e))
+        }
+        Err(e) => internal_server_error_message(e)
+    }
 }

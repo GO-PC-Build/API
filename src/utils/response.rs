@@ -33,7 +33,7 @@ pub fn internal_server_error<T: Serialize>(value: T) -> HttpResponse {
 
 pub fn internal_server_error_message(error: String) -> HttpResponse {
     internal_server_error(BaseException {
-        message: "Oops... Something went wrong on our side.\n\
+        message: "Oops... Something might've went wrong on our side.\n\
         If this keeps happening please contact the developer on discord. (Arthur#0002)",
         error
     })
