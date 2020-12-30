@@ -3,7 +3,8 @@ use actix_web::{HttpRequest, post, Responder, web::Json};
 use crate::types::auth::{SignInRequest, SignUpRequest, TokenResponse};
 use crate::types::status::StatusResponse;
 use crate::utils::postgres::{create_account, get_login_token, revoke_token};
-use crate::utils::response::{internal_server_error, no_auth_header, ok};
+use crate::utils::response::{internal_server_error, no_auth_header, ok, internal_server_error_message};
+use crate::types::user::UserThirdPlatformValueParam;
 
 #[post("/login")]
 pub async fn login(data: Json<SignInRequest>) -> impl Responder {
@@ -11,6 +12,13 @@ pub async fn login(data: Json<SignInRequest>) -> impl Responder {
         Ok(token) => ok(TokenResponse { token }),
         Err(e) => e
     }
+}
+
+#[post("/extern/login")]
+pub async fn extern_login(_data: Json<UserThirdPlatformValueParam>) -> impl Responder {
+    // TODO: IMPLEMENT ENDPOINT
+    // TODO: WRITE DOCS FOR THIS ROUTE
+    internal_server_error_message("Unimplemented endpoint!".to_string())
 }
 
 #[post("/register")]

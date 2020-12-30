@@ -30,6 +30,7 @@ async fn main() -> Result<()> {
             .service(routes::status::status)
             .service(web::scope("/auth")
                 .service(routes::auth::login)
+                .service(routes::auth::extern_login)
                 .service(routes::auth::register)
                 .service(routes::auth::revoke))
             .service(web::scope("/user")
