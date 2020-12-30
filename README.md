@@ -109,6 +109,35 @@ This endpoint fetches the base data from a user.
 
 </details>
 
+<details>
+<summary>/user/connect/{platform}</summary>
+
+#### About
+
+Connect an account with a third party platform.
+
+#### Request Body
+
+```json
+{
+  "value": "string"
+}
+```
+
+#### Request Header
+
+`Authorization`
+
+#### Return type
+
+`StatusResponse`
+
+#### Exception type
+
+`BaseException`
+
+</details>
+
 ### Responses
 
 #### Success

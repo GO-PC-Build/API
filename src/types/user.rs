@@ -1,4 +1,4 @@
-use serde::Serialize;
+use serde::{Serialize, Deserialize};
 use uuid::Uuid;
 
 #[derive(Serialize)]
@@ -8,4 +8,9 @@ pub struct User {
     pub email: String,
     pub avatar: String,
     pub date: String,
+}
+
+#[derive(Deserialize)]
+pub struct UserThirdPlatformValueParam {
+    pub value: String
 }

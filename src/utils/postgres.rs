@@ -5,13 +5,14 @@ use actix_web::HttpResponse;
 use chrono::{DateTime, Utc};
 use dotenv::dotenv;
 use postgres::{Client, Error, NoTls};
+use postgres::error::SqlState;
 use uuid::Uuid;
 
 use crate::types::auth::{SignInRequest, SignUpRequest};
 use crate::types::exceptions::BaseException;
+use crate::types::status::StatusResponse;
 use crate::types::user::User;
 use crate::utils::response::{bad_request, internal_server_error_message, ok};
-use postgres::error::SqlState;
 
 pub fn connect() -> Result<Client, Error> {
     dotenv().ok();
@@ -123,8 +124,8 @@ pub fn create_account(data: &SignUpRequest) -> Result<String, HttpResponse> {
                 if e.code() == Some(&SqlState::UNIQUE_VIOLATION) {
                     return Err(bad_request(BaseException {
                         message: "An account already exists with those field(s).",
-                        error: e.to_string()
-                    }))
+                        error: e.to_string(),
+                    }));
                 }
                 Err(internal_server_error_message(format!("Couldn't execute query. {}", e)))
             }
@@ -174,6 +175,33 @@ pub fn get_user(token: &str) -> HttpResponse {
                     }
                 }
                 Err(e) => internal_server_error_message(format!("Couldn't execute query. {}", e))
+            }
+            Err(e) => internal_server_error_message(format!("Couldn't connect to DB. {}", e))
+        }
+        Err(e) => internal_server_error_message(e)
+    }
+}
+
+pub fn connect_third_party(token: &str, platform: &str, value: &str) -> HttpResponse {
+    match get_user_uuid(token.parse().unwrap()) {
+        Ok(id) => match connect() {
+            Ok(mut client) => match client.execute(
+                "INSERT INTO linked (acc, type, value) \
+                VALUES ($1, (\
+                SELECT id \
+                FROM linked_types \
+                WHERE name ILIKE $2\
+                ), $3);", &[&id, &platform, &value]) {
+                Ok(_) => ok(StatusResponse { message: "Successfully connected accounts!" }),
+                Err(e) => {
+                    if e.code() == Some(&SqlState::UNIQUE_VIOLATION) {
+                        return bad_request(BaseException {
+                            message: "A linked account was already found.",
+                            error: e.to_string(),
+                        });
+                    }
+                    internal_server_error_message(format!("Couldn't execute query. {}", e))
+                }
             }
             Err(e) => internal_server_error_message(format!("Couldn't connect to DB. {}", e))
         }

@@ -33,6 +33,7 @@ async fn main() -> Result<()> {
                 .service(routes::auth::register)
                 .service(routes::auth::revoke))
             .service(web::scope("/user")
-                .service(routes::user::me))
+                .service(routes::user::me)
+                .service(routes::user::connect))
     }).bind(addr)?.run().await
 }
