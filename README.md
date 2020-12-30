@@ -45,6 +45,32 @@ This endpoint can be used for existing users to receive a token with their crede
 </details>
 
 <details>
+<summary>/auth/extern/login</summary>
+
+#### About
+
+Login with a third party service.
+
+#### Request Body
+
+```json
+{
+  "value": "string (client id)",
+  "token": "optional[Auth token, eg for discord]"
+}
+```
+
+#### Return type
+
+`TokenResponse`
+
+#### Exception type
+
+`BaseException`
+
+</details>
+
+<details>
 <summary>/auth/register</summary>
 
 #### About

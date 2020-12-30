@@ -12,5 +12,6 @@ pub struct User {
 
 #[derive(Deserialize)]
 pub struct UserThirdPlatformValueParam {
-    pub value: String
+    pub value: String,
+    pub token: Option<String>
 }

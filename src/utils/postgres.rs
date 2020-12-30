@@ -6,13 +6,15 @@ use chrono::{DateTime, Utc};
 use dotenv::dotenv;
 use postgres::{Client, Error, NoTls};
 use postgres::error::SqlState;
+use reqwest::{Client as ReqwestClient, StatusCode};
+use serde_json::{Error as JsonError, Value};
 use uuid::Uuid;
 
 use crate::types::auth::{SignInRequest, SignUpRequest};
 use crate::types::exceptions::BaseException;
 use crate::types::status::StatusResponse;
 use crate::types::user::User;
-use crate::utils::response::{bad_request, internal_server_error_message, ok};
+use crate::utils::response::{bad_request, bad_request_message, internal_server_error_message, ok};
 
 pub fn connect() -> Result<Client, Error> {
     dotenv().ok();
@@ -171,7 +173,7 @@ pub fn get_user(token: &str) -> HttpResponse {
                     }
                     match user {
                         Some(user) => ok(user),
-                        None => bad_request("Could not find user associated with token")
+                        None => bad_request_message("Could not find user associated with token".parse().unwrap())
                     }
                 }
                 Err(e) => internal_server_error_message(format!("Couldn't execute query. {}", e))
@@ -206,5 +208,89 @@ pub fn connect_third_party(token: &str, platform: &str, value: &str) -> HttpResp
             Err(e) => internal_server_error_message(format!("Couldn't connect to DB. {}", e))
         }
         Err(e) => internal_server_error_message(e)
+    }
+}
+
+pub async fn is_valid_discord_token(token: &String, user: &String) -> bool {
+    let client = ReqwestClient::new();
+    let req = client.get("https://discord.com/api/users/@me")
+        .header("Authorization", format!("Bearer {}", &token)).send();
+    match req.await {
+        Ok(res) => {
+            if res.status() == StatusCode::UNAUTHORIZED {
+                return false;
+            }
+            match res.text().await {
+                Ok(data) => {
+                    let v: Result<Value, JsonError> = serde_json::from_str(&data);
+                    match v {
+                        Ok(r) => {
+                            // Remove string quotes:
+                            let mut res = r["id"].to_string();
+                            res.remove(0);
+                            res.pop();
+
+                            // Check if the requested ID is the same as the given:
+                            &res.to_string() == user
+                        }
+                        Err(_) => false
+                    }
+                }
+                Err(_) => false
+            }
+        }
+        Err(_) => false
+    }
+}
+
+pub fn get_external_user(user: Option<Uuid>) -> Result<String, HttpResponse> {
+    match user {
+        Some(user) => match get_user_token(user) {
+            Ok(token) => Ok(token),
+            Err(e) => Err(internal_server_error_message(e))
+        }
+        None => Err(bad_request_message("Could not find user associated with token".parse().unwrap()))
+    }
+}
+
+pub async fn get_user_token_from_linked(value: &String, token: &Option<String>) -> Result<String, HttpResponse> {
+    match connect() {
+        Ok(mut client) => match client.query(
+            "SELECT LOWER(name), acc \
+            FROM linked, linked_types \
+            WHERE value = $1 \
+              AND type = id;", &[&value]) {
+            Ok(data) => {
+                let mut type_name: Option<String> = None;
+                let mut user: Option<Uuid> = None;
+                for row in data {
+                    let name: String = row.get(0);
+                    let acc: Uuid = row.get(1);
+                    type_name = Some(name);
+                    user = Some(acc);
+                }
+
+                match type_name {
+                    Some(provided_token_type) => match &*provided_token_type {
+                        "discord" => {
+                            match &token {
+                                Some(user_token) => {
+                                    return if is_valid_discord_token(&user_token, &value).await {
+                                        get_external_user(user)
+                                    } else {
+                                        Err(bad_request_message("An invalid token was provided.".to_string()))
+                                    };
+                                }
+                                None => Err(bad_request_message("Failed to pass security measures.".to_string()))
+                            }
+                        }
+                        _ => get_external_user(user)
+                    },
+                    None => Err(internal_server_error_message("Invalid token.".to_string()))
+                }
+            }
+            Err(e) => Err(internal_server_error_message(format!("Couldn't execute query. {}", e))),
+        }
+        Err(e) => Err(internal_server_error_message(format!("Couldn't connect to DB. {}", e)))
     }
 }
