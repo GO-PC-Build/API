@@ -72,6 +72,11 @@ pub fn get_user_token(user: Uuid) -> Result<String, String> {
     }
 }
 
+pub fn get_avatar(email: String) -> String {
+    let digest = md5::compute(email.as_bytes());
+    format!("https://www.gravatar.com/avatar/{:?}?d=https://www.kindpng.com/picc/m/421-4212275_transparent-default-avatar-png-avatar-img-png-download.png", digest)
+}
+
 pub fn get_login_token(data: &SignInRequest) -> Result<String, HttpResponse> {
     match connect() {
         Ok(mut client) => match client.query(
@@ -106,8 +111,8 @@ pub fn get_login_token(data: &SignInRequest) -> Result<String, HttpResponse> {
 pub fn create_account(data: &SignUpRequest) -> Result<String, HttpResponse> {
     match connect() {
         Ok(mut client) => match client.execute(
-            "INSERT INTO accounts (nickname, email, password) \
-            VALUES ($1, $2, $3);", &[&data.username, &data.email, &data.password]) {
+            "INSERT INTO accounts (nickname, email, avatar, password) \
+            VALUES ($1, $2, $3, $4);", &[&data.username, &data.email, &get_avatar((&*data.email).to_string()), &data.password]) {
             Ok(records) => {
                 if records == 0 {
                     return Err(internal_server_error_message("Something went wrong while trying to create account.".to_string()));
