@@ -294,3 +294,36 @@ pub async fn get_user_token_from_linked(value: &String, token: &Option<String>) 
         Err(e) => Err(internal_server_error_message(format!("Couldn't connect to DB. {}", e)))
     }
 }
+
+pub async fn is_valid_code(code: i32) -> bool {
+    match connect() {
+        Ok(mut client) => match client.query(
+            "SELECT COUNT(*) FROM codes WHERE id = $1 AND used = $2;", &[&code, &false]) {
+            Ok(query) => {
+                let mut count: i64 = 0;
+                for row in &query {
+                    count = row.get(0);
+                    break;
+                }
+                count > 0
+            }
+            Err(_) => false
+        },
+        Err(_) => false
+    }
+}
+
+pub async fn make_reservation(workshop: i32, user_id: i32, location: i32, code: i32) -> Result<String, HttpResponse> {
+    match connect() {
+        Ok(mut client) => match client.execute(
+            "INSERT INTO reservations (workshop, user_id, location, code) \
+            VALUES ($1, $2, $3, $4);", &[&workshop, &user_id, &location, &code]) {
+            Ok(_) => match client.execute("UPDATE codes set used = $1 WHERE id = $2;", &[&true, &code]) {
+                Ok(_) => Ok("Success".to_string()),
+                Err(e) => Err(internal_server_error_message(format!("Couldn't execute query. {}", e))),
+            }
+            Err(e) => Err(internal_server_error_message(format!("Couldn't execute query. {}", e))),
+        }
+        Err(e) => Err(internal_server_error_message(format!("Couldn't connect to DB. {}", e)))
+    }
+}

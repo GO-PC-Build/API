@@ -28,6 +28,7 @@ async fn main() -> Result<()> {
         App::new()
             .wrap(cors)
             .service(routes::status::status)
+            .service(routes::reserve::reserve)
             .service(web::scope("/auth")
                 .service(routes::auth::login)
                 .service(routes::auth::extern_login)
