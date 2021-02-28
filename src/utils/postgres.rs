@@ -13,7 +13,7 @@ use uuid::Uuid;
 use crate::types::auth::{SignInRequest, SignUpRequest};
 use crate::types::exceptions::BaseException;
 use crate::types::status::StatusResponse;
-use crate::types::user::User;
+use crate::types::user::{SimpleUser, User};
 use crate::utils::response::{bad_request, bad_request_message, internal_server_error_message, ok};
 
 pub fn connect() -> Result<Client, Error> {
@@ -325,5 +325,30 @@ pub async fn make_reservation(workshop: i32, user_id: i32, location: i32, code: 
             Err(e) => Err(internal_server_error_message(format!("Couldn't execute query. {}", e))),
         }
         Err(e) => Err(internal_server_error_message(format!("Couldn't connect to DB. {}", e)))
+    }
+}
+
+pub async fn get_student(user_id: i32) -> HttpResponse {
+    match connect() {
+        Ok(mut client) => match client.query("SELECT workshop, location FROM reservations WHERE user_id = $1", &[&user_id]) {
+            Ok(results) => {
+                let mut workshop = 0;
+                let mut location = 0;
+
+                for result in results {
+                    workshop = result.get(0);
+                    location = result.get(1);
+                    break;
+                }
+                
+                ok(SimpleUser {
+                    workshop,
+                    user_id,
+                    location,
+                })
+            }
+            Err(e) => internal_server_error_message(format!("Couldn't execute query. {}", e)),
+        }
+        Err(e) => internal_server_error_message(format!("Couldn't connect to DB. {}", e))
     }
 }

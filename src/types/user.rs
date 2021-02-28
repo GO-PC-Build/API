@@ -15,3 +15,10 @@ pub struct UserThirdPlatformValueParam {
     pub value: String,
     pub token: Option<String>
 }
+
+#[derive(Serialize)]
+pub struct SimpleUser {
+    pub workshop: i32,
+    pub user_id: i32,
+    pub location: i32
+}
