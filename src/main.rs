@@ -17,8 +17,6 @@ async fn main() -> Result<()> {
 
     HttpServer::new(|| {
         let cors = Cors::default()
-            // TODO: FOR FINAL MERGE, SET CORRECT CORS ORIGIN
-            // .allowed_origin("eco.xiler.net")
             .allow_any_origin()
             .allowed_methods(vec!["GET", "POST"])
             .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT])
