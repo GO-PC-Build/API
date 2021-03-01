@@ -12,6 +12,7 @@ use uuid::Uuid;
 
 use crate::types::auth::{SignInRequest, SignUpRequest};
 use crate::types::exceptions::BaseException;
+use crate::types::reserve::SchemeResponse;
 use crate::types::status::StatusResponse;
 use crate::types::user::{SimpleUser, User};
 use crate::utils::response::{bad_request, bad_request_message, internal_server_error_message, ok};
@@ -334,17 +335,46 @@ pub async fn get_student(user_id: i32) -> HttpResponse {
             Ok(results) => {
                 let mut workshop = 0;
                 let mut location = 0;
+                let mut exists = false;
 
                 for result in results {
                     workshop = result.get(0);
                     location = result.get(1);
+                    exists = true;
                     break;
                 }
-                
+
                 ok(SimpleUser {
                     workshop,
                     user_id,
                     location,
+                    exists,
+                })
+            }
+            Err(e) => internal_server_error_message(format!("Couldn't execute query. {}", e)),
+        }
+        Err(e) => internal_server_error_message(format!("Couldn't connect to DB. {}", e))
+    }
+}
+
+pub async fn get_schemes() -> HttpResponse {
+    match connect() {
+        Ok(mut client) => match client.query("SELECT location, workshop FROM reservations;", &[]) {
+            Ok(results) => {
+                let mut first_workshop: Vec<i32> = vec![];
+                let mut second_workshop: Vec<i32> = vec![];
+
+                for row in results {
+                    let workshop: i32 = row.get(1);
+                    if workshop == 0 {
+                        first_workshop.push(row.get(0))
+                    } else {
+                        second_workshop.push(row.get(0));
+                    }
+                }
+
+                ok(SchemeResponse {
+                    schemes: vec![first_workshop, second_workshop]
                 })
             }
             Err(e) => internal_server_error_message(format!("Couldn't execute query. {}", e)),

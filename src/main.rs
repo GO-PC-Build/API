@@ -29,6 +29,7 @@ async fn main() -> Result<()> {
             .wrap(cors)
             .service(routes::status::status)
             .service(routes::reserve::reserve)
+            .service(routes::reserve::schemes)
             .service(web::scope("/auth")
                 .service(routes::auth::login)
                 .service(routes::auth::extern_login)
@@ -36,6 +37,7 @@ async fn main() -> Result<()> {
                 .service(routes::auth::revoke))
             .service(web::scope("/user")
                 .service(routes::user::me)
-                .service(routes::user::connect))
+                .service(routes::user::connect)
+                .service(routes::user::user))
     }).bind(addr)?.run().await
 }

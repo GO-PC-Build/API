@@ -12,3 +12,8 @@ pub struct ReserveRequest {
 pub struct ReserveResponse {
     pub success: bool,
 }
+
+#[derive(Serialize)]
+pub struct SchemeResponse {
+    pub schemes: Vec<Vec<i32>>,
+}

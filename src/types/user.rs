@@ -20,5 +20,6 @@ pub struct UserThirdPlatformValueParam {
 pub struct SimpleUser {
     pub workshop: i32,
     pub user_id: i32,
-    pub location: i32
+    pub location: i32,
+    pub exists: bool
 }

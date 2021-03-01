@@ -2,7 +2,7 @@ use actix_web::{get, HttpRequest, post, Responder};
 use actix_web::web::{Json, Path};
 
 use crate::types::user::UserThirdPlatformValueParam;
-use crate::utils::postgres::{connect_third_party, get_user};
+use crate::utils::postgres::{connect_third_party, get_user, get_student};
 use crate::utils::response::{internal_server_error, no_auth_header};
 
 #[get("/@me")]
@@ -25,4 +25,9 @@ pub async fn connect(req: HttpRequest, platform: Path<String>, data: Json<UserTh
         }
         None => no_auth_header()
     }
+}
+
+#[get("/id/{id}")]
+pub async fn user(id: Path<i32>) -> impl Responder {
+    get_student(id.clone()).await
 }

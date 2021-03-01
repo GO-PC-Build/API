@@ -1,7 +1,8 @@
-use actix_web::{post, web::Json};
-use crate::types::reserve::{ReserveRequest, ReserveResponse};
+use actix_web::{get, post, web::Json};
 use actix_web::Responder;
-use crate::utils::postgres::{is_valid_code, make_reservation};
+
+use crate::types::reserve::{ReserveRequest, ReserveResponse};
+use crate::utils::postgres::{get_schemes, is_valid_code, make_reservation};
 use crate::utils::response::{bad_request_message, ok};
 
 #[post("/reserve")]
@@ -14,4 +15,9 @@ pub async fn reserve(body: Json<ReserveRequest>) -> impl Responder {
     } else {
         bad_request_message("An invalid code was provided".to_string())
     }
+}
+
+#[get("/schemes")]
+pub async fn schemes() -> impl Responder {
+    get_schemes().await
 }
