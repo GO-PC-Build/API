@@ -8,7 +8,7 @@ use crate::utils::response::{bad_request_message, ok};
 #[post("/reserve")]
 pub async fn reserve(body: Json<ReserveRequest>) -> impl Responder {
     if is_valid_code(body.code).await {
-        match make_reservation(body.workshop, body.user_id, body.location, body.code).await {
+        match make_reservation(body.workshop, &body.class, &body.firstname, &body.lastname, body.internalnr, body.location, body.code).await {
             Ok(data) => ok(ReserveResponse { success: &data == "Success" }),
             Err(e) => e
         }
