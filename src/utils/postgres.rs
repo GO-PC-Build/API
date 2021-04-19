@@ -363,18 +363,19 @@ pub async fn get_schemes() -> HttpResponse {
             Ok(results) => {
                 let mut first_workshop: Vec<i32> = vec![];
                 let mut second_workshop: Vec<i32> = vec![];
+                let mut third_workshop: Vec<i32> = vec![];
 
                 for row in results {
                     let workshop: i32 = row.get(1);
-                    if workshop == 0 {
-                        first_workshop.push(row.get(0))
-                    } else {
-                        second_workshop.push(row.get(0));
+                    match workshop {
+                        0 => first_workshop.push(row.get(0)),
+                        1 => second_workshop.push(row.get(0)),
+                        _ => third_workshop.push(row.get(0))
                     }
                 }
 
                 ok(SchemeResponse {
-                    schemes: vec![first_workshop, second_workshop]
+                    schemes: vec![first_workshop, second_workshop, third_workshop]
                 })
             }
             Err(e) => internal_server_error_message(format!("Couldn't execute query. {}", e)),
