@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize)]
 pub struct ReserveRequest {
-    pub internalnr: i32,
+    pub internalnr: String,
     pub class: String,
     pub firstname: String,
     pub lastname: String,
